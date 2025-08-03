@@ -49,35 +49,51 @@ class CLIENT:
       return Client("USERBOT", self.api_id, self.api_hash, session_string=data)
      
   async def add_bot(self, bot, message):
-     user_id = int(message.from_user.id)
-     msg = await bot.ask(chat_id=user_id, text=BOT_TOKEN_TEXT)
-     if msg.text=='/cancel':
-        return await msg.reply('<b>process cancelled !</b>')
-     elif not msg.forward_date:
-       return await msg.reply_text("<b>This is not a forward message</b>")
-     elif str(msg.forward_from.id) != "93372553":
-       return await msg.reply_text("<b>This message was not forward from bot father</b>")
-     bot_token = re.findall(r'\d[0-9]{8,10}:[0-9A-Za-z_-]{35}', msg.text, re.IGNORECASE)
-     bot_token = bot_token[0] if bot_token else None
-     if not bot_token:
-       return await msg.reply_text("<b>There is no bot token in that message</b>")
-     try:
-       _client = Client("BOT", Config.API_ID, Config.API_HASH, bot_token=bot_token, in_memory=True)
-       client = await _client.start()
-     except Exception as e:
-       await msg.reply_text(f"<b>BOT ERROR:</b> `{e}`")
-       return
-     _bot = _client.me
-     details = {
-       'id': _bot.id,
-       'is_bot': True,
-       'user_id': user_id,
-       'name': _bot.first_name,
-       'token': bot_token,
-       'username': _bot.username 
-     }
-     await db.add_bot(details)
-     return True
+    user_id = int(message.from_user.id)
+    msg = await bot.ask(chat_id=user_id, text=BOT_TOKEN_TEXT)
+
+    if msg.text == '/cancel':
+        return await msg.reply('<b>Process cancelled!</b>')
+    bot_token_match = re.search(r'(\d[0-9]{8,10}:[0-9A-Za-z_-]{35})', msg.text)
+    
+    if not bot_token_match:
+        return await msg.reply_text("<b>There is no valid bot token in that message.</b>")
+
+    bot_token = bot_token_match.group(1)
+
+    try:
+        session_name = f"bot_{user_id}"
+        _client = Client(
+            session_name,
+            api_id=Config.API_ID,
+            api_hash=Config.API_HASH,
+            bot_token=bot_token,
+            in_memory=True
+        )
+        await _client.start()
+
+    except errors.AuthKeyUnregistered:
+        await msg.reply_text("<b>BOT ERROR:</b> The token has been revoked or is invalid.")
+        return
+    except Exception as e:
+        await msg.reply_text(f"<b>BOT ERROR:</b> {e}")
+        return
+
+    _bot = await _client.get_me()
+    details = {
+        'id': _bot.id,
+        'is_bot': True,
+        'user_id': user_id,
+        'name': _bot.first_name,
+        'token': bot_token,
+        'username': _bot.username
+    }
+    
+    await db.add_bot(details)
+    # Stop the temporary client session after gathering details
+    await _client.stop()
+    
+    return True
 
   async def add_session(self, bot, message):
      user_id = int(message.from_user.id)
