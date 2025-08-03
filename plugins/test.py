@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:/{0,2}(.+?)(:same)?])")
-BOT_TOKEN_TEXT = "<b>1) create a bot using @BotFather\n2) Then you will get a message with bot token\n3) Forward that message to me</b>"
+BOT_TOKEN_TEXT = "<b>1) create a bot using @BotFather.\n2) Then you will get a message with bot token.\n3) Forward that message to me or just copy & send the bot token.</b>"
 SESSION_STRING_SIZE = 351
 
 # Don't Remove Credit Tg - @VJ_Botz
