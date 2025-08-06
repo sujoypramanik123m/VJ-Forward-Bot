@@ -98,7 +98,8 @@ class Db:
                'photo': True,
                'document': True,
                'animation': True,
-               'sticker': True
+               'sticker': True,
+            'thumbnail': None
             }
         }
         user = await self.col.find_one({'id':int(id)})
