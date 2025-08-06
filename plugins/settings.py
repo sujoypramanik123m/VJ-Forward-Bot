@@ -501,8 +501,12 @@ def main_buttons():
        ],[
        InlineKeyboardButton('🕵‍♀ Fɪʟᴛᴇʀs 🕵‍♀',
                     callback_data=f'settings#filters'),
-       InlineKeyboardButton('🗃 MᴏɴɢᴏDB',
-                    callback_data=f'settings#database')
+       InlineKeyboardButton("🗃 MᴏɴɢᴏDB",
+                    callback_data=f"settings#database")
+       ],
+       [
+       InlineKeyboardButton("🏞️ Tʜᴜᴍʙɴᴀɪʟ",
+                    callback_data=f"settings#thumbnail")
        ],[
        InlineKeyboardButton('Exᴛʀᴀ Sᴇᴛᴛɪɴɢs 🧪',
                     callback_data=f'settings#extra')
@@ -716,3 +720,55 @@ async def next_filters_buttons(user_id):
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
+
+
+  elif type=="thumbnail":
+     buttons = []
+     data = await get_configs(user_id)
+     thumbnail = data.get("thumbnail", None)
+     if thumbnail is None:
+        buttons.append([InlineKeyboardButton("✚ Add Thumbnail ✚", 
+                      callback_data="settings#addthumbnail")])
+     else:
+        buttons.append([InlineKeyboardButton("See Thumbnail", 
+                      callback_data="settings#seethumbnail")])
+        buttons[-1].append(InlineKeyboardButton("🗑 Delete Thumbnail", 
+                      callback_data="settings#deletethumbnail"))
+     buttons.append([InlineKeyboardButton("back", 
+                      callback_data="settings#main")])
+     await query.message.edit_text(
+        "<b>CUSTOM THUMBNAIL</b>\n\nYou can set a custom thumbnail to videos and documents. Normaly use its default thumbnail.",
+        reply_markup=InlineKeyboardMarkup(buttons))
+
+  elif type=="addthumbnail":
+     await query.message.delete()
+     photo = await bot.ask(query.message.chat.id, "Send your custom thumbnail photo\n/cancel - cancel this process")
+     if photo.text=="/cancel":
+        return await photo.reply_text(
+                  "<b>process canceled !</b>",
+                  reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("back", callback_data="settings#thumbnail")]]))
+     if not photo.photo:
+        return await photo.reply_text("<b>This is not a photo !</b>",
+                  reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("back", callback_data="settings#thumbnail")]]))
+     await update_configs(user_id, "thumbnail", photo.photo.file_id)
+     await photo.reply_text(
+        "<b>successfully updated</b>",
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("back", callback_data="settings#thumbnail")]]))
+
+  elif type=="seethumbnail":
+     data = await get_configs(user_id)
+     thumbnail = data.get("thumbnail", None)
+     if thumbnail:
+        await bot.send_photo(chat_id=query.message.chat.id, photo=thumbnail,
+                             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("back", callback_data="settings#thumbnail")]]))
+     else:
+        await query.message.edit_text("<b>No thumbnail set.</b>",
+                                      reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("back", callback_data="settings#thumbnail")]]))
+
+  elif type=="deletethumbnail":
+     await update_configs(user_id, "thumbnail", None)
+     await query.message.edit_text(
+        "<b>successfully updated</b>",
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("back", callback_data="settings#thumbnail")]]))
+
+
