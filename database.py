@@ -89,17 +89,19 @@ class Db:
             'protect': None,
             'button': None,
             'db_uri': None,
+            'thumbnail': None,
+            'video_quality': True,
+            'audio_quality': True,
+            'photo': True,
             'filters': {
                'poll': True,
                'text': True,
                'audio': True,
                'voice': True,
                'video': True,
-               'photo': True,
                'document': True,
                'animation': True,
                'sticker': True,
-            'thumbnail': None
             }
         }
         user = await self.col.find_one({'id':int(id)})
